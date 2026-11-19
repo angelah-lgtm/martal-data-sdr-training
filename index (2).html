@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Martal Data: SDR Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --charcoal:#181818;--ink-800:#242424;--ink-700:#303030;--ink-500:#565656;--ink-400:#7a7a7a;--ink-300:#a3a3a3;--ink-200:#cfcfcf;--ink-100:#e7e7e7;--ink-50:#f4f4f4;
+  --green:#80b122;--green-600:#66901b;--green-700:#4f6e13;--green-100:#e6f1cf;--green-50:#f3f8e6;
+  --blue:#2d9cdb;--blue-600:#2588bf;--blue-700:#1c6d9c;--blue-100:#d5edf8;--blue-50:#eaf6fc;
+  --danger:#d1483a;
+  --r-md:10px;--r-lg:16px;--r-xl:24px;
+  --shadow-sm:0 1px 2px rgba(24,24,24,.06),0 1px 3px rgba(24,24,24,.06);
+  --liquid-duo:radial-gradient(90% 130% at 12% 8%,rgba(128,177,34,.55) 0%,rgba(128,177,34,0) 45%),radial-gradient(90% 120% at 92% 20%,rgba(45,156,219,.55) 0%,rgba(45,156,219,0) 48%),linear-gradient(160deg,#181818 0%,#0d0d0d 100%);
+  --ease:cubic-bezier(.2,0,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,system-ui,sans-serif;color:var(--ink-700);background:var(--ink-50);line-height:1.6;font-size:15px}
+h1,h2,h3,h4{color:var(--charcoal);margin:0;line-height:1.25;letter-spacing:-.02em}
+a{color:var(--blue-600)}
+.overline{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--green-600)}
+.app{display:grid;grid-template-columns:268px 1fr;min-height:100vh}
+/* sidebar */
+aside{background:var(--charcoal);color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:24px 16px;display:flex;flex-direction:column}
+aside .brand{padding:0 8px 6px}
+aside .brand img{height:24px;display:block}
+aside .sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#b6d67e;font-weight:600;padding:10px 8px 22px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:14px}
+aside a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);text-decoration:none;color:var(--ink-200);font-size:14px;font-weight:500;margin-bottom:2px;transition:background .12s}
+aside a:hover{background:rgba(255,255,255,.06);color:#fff}
+aside a.on{background:rgba(128,177,34,.16);color:#fff;box-shadow:inset 3px 0 0 var(--green)}
+aside a .n{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+aside a.on .n{border-color:var(--green);background:var(--green);color:#fff}
+aside .foot{margin-top:auto;font-size:12px;color:var(--ink-400);padding:16px 8px 0}
+/* page */
+main{min-width:0}
+.head{background:var(--liquid-duo);color:#fff;padding:40px 48px 36px}
+.head .overline{color:#b6d67e}
+.head h1{color:#fff;font-size:34px;font-weight:800;margin:6px 0 8px;max-width:820px}
+.head p{color:var(--ink-200);font-size:16px;max-width:760px;margin:0}
+.body{padding:32px 48px 64px;max-width:1040px}
+.page{display:none}.page.on{display:block}
+h2{font-size:22px;font-weight:800;margin:34px 0 10px}
+h2:first-child{margin-top:0}
+h3{font-size:16.5px;font-weight:700;margin:22px 0 8px}
+p{max-width:780px}
+.card{background:#fff;border:1px solid var(--ink-100);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:18px 20px}
+.card h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.card p{margin:0;font-size:14px}
+.card p+p{margin-top:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:var(--green);color:#fff;margin-bottom:10px}
+.tag.blue{background:var(--blue)}.tag.ink{background:var(--charcoal)}.tag.red{background:var(--danger)}
+.say{position:relative;background:var(--charcoal);color:#fff;border-radius:var(--r-lg);padding:16px 22px;margin:10px 0;font-size:15.5px;line-height:1.65;max-width:840px}
+.say .who{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#b6d67e;font-weight:600;margin-bottom:4px}
+.say.them{background:#fff;color:var(--charcoal);border:1px solid var(--ink-100)}
+.say.them .who{color:var(--ink-400)}
+.say p{margin:0 0 6px;padding-right:72px;max-width:none}.say p:last-of-type{margin-bottom:0}
+.say .copy{position:absolute;top:12px;right:12px;font-family:inherit;font-size:11.5px;font-weight:600;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;padding:4px 12px;cursor:pointer}
+.say.them .copy{border-color:var(--ink-200);color:var(--charcoal)}
+.note{background:var(--blue-50);border-radius:var(--r-md);padding:12px 16px;font-size:14px;color:var(--blue-700);max-width:840px;margin:10px 0}
+.note b{color:var(--blue-700)}
+.data{background:var(--green-50);border-radius:var(--r-md);padding:12px 16px;font-size:14px;color:var(--green-700);max-width:840px;margin:10px 0}
+.warn{background:#fbeceb;border-radius:var(--r-md);padding:12px 16px;font-size:14px;color:#9b3127;max-width:840px;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0;background:#fff;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-400);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--ink-200);background:#fff}
+td{padding:10px 14px;border-bottom:1px solid var(--ink-100);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td b{color:var(--charcoal)}
+ul.tight{margin:6px 0;padding-left:20px;max-width:780px}ul.tight li{margin:4px 0}
+.steps{counter-reset:s;display:grid;gap:10px;margin:12px 0;max-width:840px}
+.steps>div{counter-increment:s;display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;background:#fff;border:1px solid var(--ink-100);border-radius:var(--r-lg);padding:12px 14px}
+.steps>div:before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--charcoal);color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px}
+.steps b{color:var(--charcoal)}
+/* glossary */
+.gsearch{width:100%;max-width:420px;font-family:inherit;font-size:14px;padding:10px 14px;border:1px solid var(--ink-200);border-radius:999px;margin:4px 0 14px;background:#fff}
+.gsearch:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(45,156,219,.25)}
+.gl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gl .card h4{display:flex;align-items:center;gap:8px}
+.gl .card .say-it{margin-top:8px;font-size:13px;color:var(--green-700)}
+.gl .card .dont{margin-top:4px;font-size:13px;color:#9b3127}
+/* pitch tabs */
+.ptabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.ptabs button{font-family:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:999px;border:1px solid var(--ink-200);background:#fff;color:var(--ink-700);cursor:pointer}
+.ptabs button.on{background:var(--charcoal);border-color:var(--charcoal);color:#fff}
+.ppane{display:none}.ppane.on{display:block}
+/* flip */
+.flips{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.flip{perspective:1200px;cursor:pointer;min-height:250px}
+.flip .in{position:relative;width:100%;height:100%;min-height:250px;transition:transform .45s var(--ease);transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .f,.flip .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column}
+.flip .f{background:#fff;border:1px solid var(--ink-100);box-shadow:var(--shadow-sm)}
+.flip .f q{font-size:19px;font-weight:700;color:var(--charcoal);margin:8px 0}
+.flip .f small{margin-top:auto;color:var(--ink-400);font-size:12px}
+.flip .b{background:var(--charcoal);color:#fff;transform:rotateY(180deg);font-size:14px;overflow:auto}
+.flip .b .lbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#b6d67e;font-weight:600}
+.flip .b p{margin:4px 0 10px}
+/* optional check */
+details.check{margin-top:36px;background:#fff;border:1px solid var(--ink-100);border-radius:var(--r-xl);padding:4px 22px;box-shadow:var(--shadow-sm)}
+details.check summary{cursor:pointer;font-weight:700;color:var(--charcoal);padding:14px 0;list-style:none;display:flex;align-items:center;gap:10px}
+details.check summary::-webkit-details-marker{display:none}
+details.check summary:after{content:"+";margin-left:auto;font-size:20px;color:var(--ink-400)}
+details.check[open] summary:after{content:"\2212"}
+details.check summary span{font-weight:500;color:var(--ink-400);font-size:13px}
+.q{padding:12px 0;border-top:1px solid var(--ink-100)}
+.q .p{font-weight:600;color:var(--charcoal);margin-bottom:8px}
+.q button.opt{display:block;width:100%;text-align:left;font-family:inherit;font-size:14px;background:#fff;border:1px solid var(--ink-200);border-radius:var(--r-md);padding:9px 14px;margin:6px 0;cursor:pointer;color:var(--ink-700)}
+.q button.opt:hover:not(:disabled){border-color:var(--charcoal)}
+.q button.opt.right{border-color:var(--green);background:var(--green-50);color:var(--green-700);font-weight:600}
+.q button.opt.wrong{border-color:var(--danger);background:#fbeceb;color:var(--danger)}
+.q .ex{display:none;font-size:13.5px;margin:6px 0 4px;padding:10px 12px;border-radius:var(--r-md);background:var(--blue-50);color:var(--blue-700)}
+.q.answered .ex{display:block}
+/* pager */
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--ink-200)}
+.pager a{display:flex;flex-direction:column;text-decoration:none;padding:12px 18px;border-radius:var(--r-lg);background:#fff;border:1px solid var(--ink-100);min-width:200px;box-shadow:var(--shadow-sm)}
+.pager a:hover{border-color:var(--charcoal)}
+.pager a small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-400);font-weight:600}
+.pager a span{color:var(--charcoal);font-weight:700}
+.pager a.next{text-align:right;margin-left:auto}
+.menu{display:none}
+@media (max-width:900px){
+ .app{grid-template-columns:1fr}
+ aside{position:fixed;inset:0 30% 0 0;z-index:30;transform:translateX(-100%);transition:transform .2s var(--ease)}
+ aside.open{transform:none}
+ .menu{display:inline-flex;position:fixed;top:12px;left:12px;z-index:31;font-family:inherit;font-weight:600;font-size:13px;background:var(--charcoal);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:8px 14px}
+ .head{padding:64px 20px 28px}.head h1{font-size:26px}
+ .body{padding:24px 20px 48px}
+ .grid2,.grid3,.gl,.flips{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.btnx{font-family:inherit;font-weight:600;font-size:14px;border-radius:999px;padding:10px 22px;border:0;background:var(--green);color:#fff;cursor:pointer}
+.btnx:hover{background:var(--green-600)}
+.btnx.dark{background:var(--charcoal)}.btnx.dark:hover{background:var(--ink-800)}
+.btnx.line{background:#fff;color:var(--charcoal);border:1px solid var(--ink-200)}
+.qsec{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-600);font-weight:700;margin-bottom:4px}
+.result{border-radius:var(--r-xl);padding:28px;color:#fff;background:var(--liquid-duo);margin-bottom:16px}
+.result h3{color:#fff;font-size:24px;margin:0 0 6px}
+.result p{color:var(--ink-200);margin:0}
+.result .big{font-size:44px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.summary{width:100%;min-height:190px;font-family:ui-monospace,Menlo,monospace;font-size:13px;padding:14px;border-radius:var(--r-md);border:1px solid var(--ink-200);background:#fff;color:var(--charcoal);resize:vertical}
+.secbar{display:grid;grid-template-columns:200px 1fr 60px;gap:10px;align-items:center;font-size:13.5px;margin:6px 0}
+.secbar .t{height:8px;border-radius:99px;background:var(--ink-100);overflow:hidden}.secbar .t i{display:block;height:100%;background:var(--green)}
+.secbar .t i.low{background:var(--danger)}
+</style>
+</head>
+<body>
+<button class="menu" id="menu">Menu</button>
+<div class="app">
+<aside id="side">
+  <div class="brand"><img src="data:image/png;base64,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" alt="Martal"></div>
+  <div class="sub">Martal Data &middot; SDR training</div>
+  <a href="#offer" data-p="offer"><span class="n">1</span>The offer</a>
+  <a href="#vocab" data-p="vocab"><span class="n">2</span>Vocabulary</a>
+  <a href="#calling" data-p="calling"><span class="n">3</span>Who we're calling and why</a>
+  <a href="#pitches" data-p="pitches"><span class="n">4</span>Pitches</a>
+  <a href="#discovery" data-p="discovery"><span class="n">5</span>The two questions</a>
+  <a href="#close" data-p="close"><span class="n">6</span>The number and the ask</a>
+  <a href="#objections" data-p="objections"><span class="n">7</span>Objections</a>
+  <a href="#followup" data-p="followup"><span class="n">8</span>Callbacks, voicemail, email</a>
+  <a href="#logging" data-p="logging"><span class="n">9</span>Logging</a>
+  <a href="#check" data-p="check"><span class="n">10</span>Final check</a>
+  <div class="foot">Questions go in #int-martal-data-labeler</div>
+</aside>
+
+<main>
+
+<!-- OFFER -->
+<section class="page" id="p-offer" data-title="The offer" data-over="Start here" data-lead="What Martal Data does, why companies get paid for this, and what happens after a rep wins the call.">
+  <h2>What you're actually calling about</h2>
+  <p>Every company you call has years of old email, team chat, project tasks and CRM history sitting in its systems. Nobody looks at it. It costs money to store.</p>
+  <p>AI developers will now pay real money, usually six figures, to license an anonymized copy of that history. They use it to teach AI how actual work gets done inside a business.</p>
+  <p>Your job is to find out if the company you're calling is sitting on some of that money, give them an estimate on the spot, and get them a call with Logan to find out the exact number. That's it. You're not selling them anything. You're telling them about money they may not know they have.</p>
+
+  <h2>Martal Data in one line</h2>
+  <div class="say"><span class="who">Say it like this</span><p>"We help companies get paid for their old business records. AI developers license a copy to learn how real work gets done. Names get stripped out, and the company decides what's included."</p><button class="copy">Copy</button></div>
+
+  <h2>Who Martal Data is</h2>
+  <p>Martal Data is Martal's data licensing business. We find companies sitting on years of operating records, figure out what those records are worth, and run the whole process so the company gets paid without dealing with AI developers directly.</p>
+  <div class="grid2">
+    <div class="card"><h4>What we do for the company</h4><p>Value their records against what buyers across the market are paying, handle the anonymization, and put a training-only license in front of them with the protections written in.</p></div>
+    <div class="card"><h4>Who we work with on it</h4><p>Mode is our platform partner. They run the portal and the paperwork. That's why the estimate email comes from "Capital at Mode Mobile" and not from Martal.</p></div>
+    <div class="card"><h4>Where we are</h4><p>Brand new. The campaign launched November 10. Our first company, a 30-person software platform, signed a letter of intent after one call with Logan.</p></div>
+    <div class="card"><h4>What we don't say</h4><p>Don't claim customer counts, case studies or "we've done this with X." We don't have those yet. The proof on a cold call is the number they get on their own company.</p></div>
+  </div>
+
+  <h2>Why AI developers pay for this</h2>
+  <p>Today's AI tools do single tasks: draft an email, summarize a doc. The next generation is being built to run whole workflows, the way a real employee would. To learn that, AI developers need to see how real teams actually move work around.</p>
+  <div class="card" style="max-width:840px"><h4>What that looks like in a company's records</h4><p>A client emails a question. Someone forwards it in Teams. A task gets opened in the project tool. The CRM gets updated. An invoice goes out. Two days later someone fixes a mistake. That chain, across tools, over years, is what they're paying for. Not the client's name. Not the dollar amounts. How the work moved.</p></div>
+  <p>A CRM export by itself is just a spreadsheet. The conversations around it, connected across tools, are what has value. That's why more years and more connected tools mean a bigger number.</p>
+
+  <h2>Why a company would say yes</h2>
+  <div class="grid3">
+    <div class="card"><h4>It's money for work already done</h4><p>The records already exist. They're costing money to store and earning nothing.</p></div>
+    <div class="card"><h4>It doesn't change how they run</h4><p>Their team exports copies. Nothing gets connected to live systems. A few hours of someone's time.</p></div>
+    <div class="card"><h4>The timing is often right</h4><p>Tight margins, a partner retiring, a merger, moving off an old system, or just wanting to take some chips off the table.</p></div>
+  </div>
+
+  <h2>What protects them</h2>
+  <table>
+    <tr><th>Their worry</th><th>What actually happens</th></tr>
+    <tr><td><b>"You'll see our client data"</b></td><td>Names, emails, phone numbers and other identifiers are swapped for consistent fake ones before anything leaves. Privileged or sensitive material is removed. Client files can be left out completely.</td></tr>
+    <tr><td><b>"We lose control"</b></td><td>It's a license, not a sale. They keep the original. They pick which systems go in and can write exclusions into the contract.</td></tr>
+    <tr><td><b>"What will they use it for?"</b></td><td>Training-only license. They can review an anonymized sample before anything is delivered.</td></tr>
+    <tr><td><b>"We'll get locked in"</b></td><td>Nothing is binding until they sign a fixed offer in writing, and their lawyer reviews it first.</td></tr>
+    <tr><td><b>"Someone gets our logins"</b></td><td>No passwords change hands. Their own team exports copies.</td></tr>
+  </table>
+  <div class="warn">Never say "100% safe," "no privacy concerns" or "we anonymize everything." Say what actually happens: identifiers get swapped out, sensitive material gets removed, they choose what's in.</div>
+
+  <h2>What happens after the call</h2>
+  <p>Every call you win ends one of two ways. Either one gets them to the same place.</p>
+  <div class="grid2">
+    <div class="card"><span class="tag">Path 1</span><h4>Meeting booked with Logan</h4><p>A 20 to 30 minute call. Logan gives them the exact number, walks through the privacy side and answers their questions. Then he sends them into the portal to start.</p></div>
+    <div class="card"><span class="tag blue">Path 2</span><h4>Form filled, email verified</h4><p>You submit the form on the call. They open the email from Capital at Mode Mobile, click the link, and land in their portal with their estimate. No meeting needed to get started.</p></div>
+  </div>
+  <h3>From the portal on, it's the same for both</h3>
+  <div class="steps">
+    <div><span><b>Non-binding LOI with an NDA.</b> Waiting in their portal. Holds their spot while the offer is prepared. No price, no commitment.</span></div>
+    <div><span><b>Short intake.</b> Which systems, roughly how many people, how many years. Rough numbers are fine.</span></div>
+    <div><span><b>Fixed offer in writing.</b> The data license agreement. This is the only point where they commit. Their lawyer reviews it.</span></div>
+    <div><span><b>Their team exports copies.</b> Anonymization happens before anything is delivered.</span></div>
+    <div><span><b>They get paid.</b> Usually about 2 to 3 months from the first call. Never promise a date.</span></div>
+  </div>
+  <div class="note"><b>A form with no verified email is neither path.</b> It sits stuck until someone calls them back and gets them to Logan or into the portal.</div>
+
+  <h2>The money</h2>
+  <div class="grid2">
+    <div class="card"><h4>What drives the number</h4><p>Full-time office staff, years of records, how many connected systems, and industry. Legal and finance firms tend to get paid more than other industries.</p></div>
+    <div class="card"><h4>What it usually looks like</h4><p>Most licenses land in the six figures. A 100-person US company with 10 years of records is typically in the $380K to $890K range. The form gives you an estimate for each company.</p></div>
+  </div>
+  <div class="note"><b>Good to follow:</b> only quote the range the form gives you, and always call it an estimate. The exact number comes after Logan's call and the intake.</div>
+</section>
+
+<!-- VOCAB -->
+<section class="page" id="p-vocab" data-title="Vocabulary" data-over="Know the words" data-lead="Every term you'll hear on this campaign, from prospects, from Logan and in the channel. Search it, then use the right words on the phone.">
+  <input class="gsearch" id="gsearch" placeholder="Search a term, like LOI or portal">
+  <div class="gl" id="gl"></div>
+</section>
+
+<!-- CALLING -->
+<section class="page" id="p-calling" data-title="Who we're calling and why" data-over="Your lists" data-lead="Your lists are built for you. Every contact is C-suite and comes with a signal. This is why each group is on them, what the signal means, and how to use it.">
+  <h2>Why these industries</h2>
+  <table>
+    <tr><th>List</th><th>Why they're on it</th><th>What they care about</th></tr>
+    <tr><td><b>Accounting, tax and bookkeeping firms</b><br><small>15+ office staff</small></td><td>Finance data is some of the most valuable to buyers. These firms run on email and workflow tools and keep everything for years. Best connect rate and most meetings so far.</td><td>Client confidentiality, margins after busy season, partners retiring</td></tr>
+    <tr><td><b>Investment firms</b><br><small>RIAs, wealth, PE, VC. 15+ office staff</small></td><td>Same finance premium. Heavy email and CRM history.</td><td>Compliance, reputation, whether a big parent firm owns the decision</td></tr>
+    <tr><td><b>Law firms</b><br><small>10+ office staff</small></td><td>Legal data is some of the most valuable to buyers. Years of matter email and document history. Not dialed yet, so wide open.</td><td>Privilege, ethics rules, the managing partner's sign-off</td></tr>
+    <tr><td><b>Software, fintech, security, MSPs</b><br><small>50+ office staff</small></td><td>Lots of connected tools (Slack, Jira, GitHub, CRM, ticketing), which raises the value.</td><td>Their data as a competitive edge, who ends up with it, being one of many vendors calling</td></tr>
+  </table>
+
+  <h2>Who's on your list</h2>
+  <p>As of the 11/19 list refresh, every contact is C-suite: owner, founder, CEO, president, COO, CFO, or the managing partner who runs the firm. Those are the people who can say yes. Our only signed deal so far came from a CEO and founder. Almost every stalled referral was a VP who couldn't say yes.</p>
+  <p>Every contact also comes with a signal, a reason they're likely to care right now. That's your reason for calling.</p>
+
+  <h2>The signals on your list, and how to use them</h2>
+  <table>
+    <tr><th>Signal</th><th>What it means</th><th>Why they'd care</th><th>Opener angle</th></tr>
+    <tr><td><b>New to the job</b><br><small>New CEO, COO or CFO</small></td><td>They started in the role recently</td><td>New execs want early wins. New revenue that doesn't take headcount or budget is an easy one to bring to the owners.</td><td>"Saw you stepped into the [title] role recently. Most new [titles] haven't looked at this yet..."</td></tr>
+    <tr><td><b>New tech stack</b><br><small>Recently added or switched tools</small></td><td>They moved to a new system, so the old one is sitting there</td><td>Old systems are the easiest yes. It's history nobody uses, and licensing it doesn't touch their day to day.</td><td>"Looks like you moved to [tool]. Can you still get into the old system?"</td></tr>
+  </table>
+  <p>The exact openers are on the Pitches page under "Something happened."</p>
+  <h3>Other signals worth using if you spot them</h3>
+  <ul class="tight">
+    <li>A merger, acquisition or sale in progress</li>
+    <li>A founding partner retiring</li>
+    <li>Cost cutting or downsizing</li>
+  </ul>
+  <h3>If you still land on the wrong person</h3>
+  <p>Old lists and switchboards still get you to the wrong desk sometimes. Don't pitch them. Get the owner's name, thank them, move on, and post the title in the channel.</p>
+
+  <h2>Who we skip, and why</h2>
+  <table>
+    <tr><th>Skip</th><th>Why</th></tr>
+    <tr><td>Government and public sector</td><td>We aren't SAM registered, which most government buyers require</td></tr>
+    <tr><td>Hospitals and patient-data businesses</td><td>Patient health data needs a HIPAA path we don't have yet</td></tr>
+    <tr><td>Defense contractors, ITAR or classified work</td><td>Export-controlled data can't be licensed</td></tr>
+    <tr><td>Companies whose client contracts forbid any reuse of data</td><td>They can't license it even if they want to</td></tr>
+    <tr><td>Paper or on-premise only, or under 3 years of records</td><td>Not enough data to be worth it</td></tr>
+  </table>
+  <p>Companies outside the US, Canada, UK and Australia can still be submitted, but they're lower priority and more likely to be turned down.</p>
+</section>
+
+<!-- PITCHES -->
+<section class="page" id="p-pitches" data-title="Pitches" data-over="What to say first" data-lead="Pick the opener that fits who you're calling and what you know about them. Every one of them does the same three things: owns the cold call, gives a specific reason you picked them, and ends on a question.">
+  <h2>Will a CEO actually listen?</h2>
+  <p>Yes, if three things are true in the first 20 seconds. It's about money they already have, not something you want from them. It's specific to their company, not a blast. And it ends on a question they can answer, not a pitch they have to sit through.</p>
+  <p>What loses a CEO: sounding like a data broker ("we buy data"), a long setup, or being the 20th person who wants 30 minutes before saying anything useful. Our first signed CEO told Logan more than 20 vendors had already called him about this.</p>
+  <div class="data"><b>From our calls:</b> none of the calls under 90 seconds produced a referral. Every call where the rep talked more than 45 seconds before the prospect spoke ended in a no or a hang-up. Get them talking fast.</div>
+
+  <h2>Pick your opener</h2>
+  <div class="ptabs" id="ptabs">
+    <button data-t="looked" class="on">I looked you up</button>
+    <button data-t="reason">Reason I picked you</button>
+    <button data-t="trigger">Something happened (signals)</button>
+    <button data-t="curious">Quick question</button>
+    <button data-t="referral">They pointed me to you</button>
+    <button data-t="gate">Gatekeeper</button>
+  </div>
+
+  <div class="ppane on" id="pt-looked">
+    <p><b>Use it when:</b> your list shows their headcount and when they were founded. This is the strongest opener we have, because you give them something before you ask for anything.</p>
+    <div class="say"><span class="who">You</span><p>"Hi [Name], it's [Rep] with Martal Data. I'll be upfront, this is a cold call. Can I tell you why I picked you, and you tell me if it's worth 30 seconds?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"Sure."</p></div>
+    <div class="say"><span class="who">You</span><p>"So I was poking around [Company] before I called. Looks like you've got about [#] people and you've been around since [year]. That sound right?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"Yeah, give or take."</p></div>
+    <div class="say"><span class="who">You</span><p>"Okay. So AI companies are paying firms your size for their old emails and project stuff. Not client files, just how the work got done. Firms your size are usually seeing somewhere in the [low / mid / high] six figures. Anybody told you what yours might be worth?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"No... how'd you come up with that?"</p></div>
+    <div class="say"><span class="who">You</span><p>"It's basically what buyers are paying out there based on team size and how many years of history you've got. My numbers might be off though. Two quick questions and I can get you closer."</p><button class="copy">Copy</button></div>
+    <div class="note"><b>Why it works:</b> you lead with a number tied to their company, so it's about their money from the first sentence. And the two questions stop feeling like discovery. They're how you tighten their number.</div>
+    <div class="warn"><b>Always a range, never a number.</b> Say "usually somewhere in the mid six figures," never "you'll get $315K." Your list headcount can include field staff, and founding year isn't always how far their systems go back. Get the exact estimate from the form once you have the two answers. Use the cheat sheet on "The number and the ask" to pick the range before you dial.</div>
+  </div>
+
+  <div class="ppane" id="pt-reason">
+    <p><b>Use it when:</b> you have their title, company size and industry from the list. This is the default.</p>
+    <div class="say"><span class="who">You</span><p>"Hi [Name], it's [Rep] with Martal Data. I'll be upfront, this is a cold call. Can I tell you why I picked you, and you tell me if it's worth 30 seconds?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"Sure, go ahead."</p></div>
+    <div class="say"><span class="who">You</span><p>"So I'm calling because it looks like you've got about [#] people over there, and you've been around since [year]. That sound right?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"Yeah, about that."</p></div>
+    <div class="say"><span class="who">You</span><p>"Okay cool. So AI companies are actually paying firms your size for their old emails and project stuff. Not client files, just how the work got done. Has anybody told you what yours might be worth?"</p><button class="copy">Copy</button></div>
+    <div class="note"><b>Why it works:</b> "That sound right?" gets them talking in the first 15 seconds, and it's an easy yes. The numbers prove you didn't just dial a list.</div>
+  </div>
+
+  <div class="ppane" id="pt-trigger">
+    <p><b>Use it when:</b> your list shows a signal (new to the job, new tech stack), or you spot a merger or retiring partner. Lead with the signal. It's the best reason for calling you'll have.</p>
+    <div class="say"><span class="who">New to the job</span><p>"Hi [Name], it's [Rep] with Martal Data. I'll be upfront, this is a cold call. I saw you stepped into the [title] role at [Company] recently. Most new [titles] I talk to haven't looked at this yet. AI developers are paying firms like yours for a copy of their old email and workflow history. It's usually six figures, and it doesn't take budget or headcount. Has anyone brought that up with you?"</p><button class="copy">Copy</button></div>
+    <div class="say"><span class="who">New tech stack</span><p>"Hi [Name], it's [Rep] with Martal Data. Cold call, I'll be quick. Looks like [Company] moved to [new tool] recently. Can you still get into the old system? What's sitting in there is probably worth something to AI developers, and licensing it doesn't touch your day to day at all."</p><button class="copy">Copy</button></div>
+    <div class="say"><span class="who">Merger or sale</span><p>"Hi [Name], it's [Rep] with Martal Data. This is a cold call, but I'll be quick. I saw [Company] is [merging with / being acquired by] [X]. Usually when that happens the old email and project history gets shelved or deleted. AI developers are paying for a copy of exactly that. Has anyone looked at what yours is worth before the deal closes?"</p><button class="copy">Copy</button></div>
+    <div class="say"><span class="who">Partner retiring</span><p>"Hi [Name], it's [Rep] with Martal Data. Cold call, I'll be quick. I saw [Partner] is retiring. Firms going through that are finding their old records are worth real money to AI developers. Has that come up on your end at all?"</p><button class="copy">Copy</button></div>
+    <div class="say">  </div>
+
+  <div class="ppane" id="pt-curious">
+    <p><b>Use it when:</b> you have nothing specific and want them talking right away. Works well with owners who like a little personality.</p>
+    <div class="say"><span class="who">You</span><p>"Hi [Name], it's [Rep] with Martal Data. Quick question, and then you can tell me to get lost. When's the last time anyone at [Company] opened an email from five years ago?"</p><button class="copy">Copy</button></div>
+    <div class="say them"><span class="who">Them</span><p>"Ha. Probably never."</p></div>
+    <div class="say"><span class="who">You</span><p>"That's why I'm calling. AI developers are paying companies for a copy of exactly that kind of history. Names stripped out, you pick what's in. For a firm your size it's usually six figures. Has anybody walked you through what yours would be worth?"</p><button class="copy">Copy</button></div>
+  </div>
+
+  <div class="ppane" id="pt-referral">
+    <p><b>Use it when:</b> someone on the list told you they're not the right person and gave you a name.</p>
+    <div class="say"><span class="who">You</span><p>"Hi [Name], it's [Rep] with Martal Data. [Referrer] said you'd be the right person to talk to. Cold call, I'll be quick. AI developers are paying firms like [Company] for a copy of their old operating records, and [Referrer] said that decision sits with you. Has anyone told you what yours might be worth?"</p><button class="copy">Copy</button></div>
+  </div>
+
+  <div class="ppane" id="pt-gate">
+    <p><b>Use it when:</b> a receptionist or assistant picks up. Be short, sound like you belong, and don't pitch them.</p>
+    <div class="say"><span class="who">You</span><p>"Hi, it's [Rep] with Martal Data. Is [Name] around?"</p></div>
+    <div class="say them"><span class="who">Them</span><p>"What's this regarding?"</p></div>
+    <div class="say"><span class="who">You</span><p>"It's about what the firm's old records might be worth. Owner-level question, honestly. Is [Name] the right person for that, or is it someone else?"</p><button class="copy">Copy</button></div>
+    <p>Not available? Ask the best time to catch them, and get their direct line or cell if you can.</p>
+  </div>
+
+  <h2>Industry angles</h2>
+  <p>Drop one line into any opener to make it land for their world.</p>
+  <table>
+    <tr><th>Industry</th><th>Add this</th></tr>
+    <tr><td><b>Accounting and tax</b></td><td>"Finance firms are one of the groups AI developers pay the most for. It's your workflow history they want, not client returns."</td></tr>
+    <tr><td><b>Investment and wealth</b></td><td>"It's how your team works, not client portfolios. Client information gets stripped out before anything leaves."</td></tr>
+    <tr><td><b>Law</b></td><td>"Legal is one of the most valuable categories. Privileged material is removed, and it's how work moved, not what clients said."</td></tr>
+    <tr><td><b>Software and MSPs</b></td><td>"Companies with a lot of connected tools, Slack, Jira, GitHub, your CRM, tend to get the higher numbers."</td></tr>
+  </table>
+
+  <h2>Words that lose the call</h2>
+  <table>
+    <tr><th>Don't say</th><th>Say instead</th></tr>
+    <tr><td>"We buy your data" / "sell your data"</td><td>"License a copy of your old records"</td></tr>
+    <tr><td>"How are you today?" / "Did I catch you at a bad time?"</td><td>"I'll be upfront, this is a cold call"</td></tr>
+    <tr><td>"It's 100% safe"</td><td>"Names get swapped out, sensitive material gets removed, you pick what's in"</td></tr>
+    <tr><td>Any AI lab's name</td><td>"AI developers"</td></tr>
+    <tr><td>"MSP tickets" to a software company, or any example from another industry</td><td>An example from their world</td></tr>
+  </table>
+</section>
+
+<!-- DISCOVERY -->
+<section class="page" id="p-discovery" data-title="The two questions" data-over="Discovery" data-lead="Two answers get you a number. Every referral on this campaign had them. None of the calls without them produced one.">
+  <h2>Why these two</h2>
+  <p>The value comes from records created by people working at computers: email, chat, project tools, the CRM. So the form wants how many people are creating those records, and how many years of them exist. Field crews, drivers and warehouse staff don't count, because they don't create that kind of history.</p>
+
+  <h2>Question 1: how many people</h2>
+  <div class="say"><span class="who">You</span><p>"How many full-time people do you have on the team, not counting field or warehouse staff?"</p><button class="copy">Copy</button></div>
+  <p>For a professional firm, just ask: "How many full-time people at the firm?" Everyone there works at a computer.</p>
+  <div class="grid2">
+    <div class="card"><h4>"I'm not sure exactly"</h4><p>"Ballpark is fine. Closer to 20 or closer to 50?"</p></div>
+    <div class="card"><h4>"We have 200 people, but most are in the field"</h4><p>"Got it. How many of those are in the office?" Use that number.</p></div>
+  </div>
+
+  <h2>Question 2: how many years</h2>
+  <div class="say"><span class="who">You</span><p>"How long have you been on your current email and systems? And are there any older systems you moved off of but can still get into?"</p><button class="copy">Copy</button></div>
+  <div class="grid2">
+    <div class="card"><h4>"We switched last year"</h4><p>"Can you still get into the old one?" If yes, that's the best case. Put the old system's years in the form too.</p></div>
+    <div class="card"><h4>"Since we opened in 2012"</h4><p>That's about 14 years. Put it in.</p></div>
+  </div>
+
+  <h2>If they're not the decision maker</h2>
+  <p>Before the two questions, check: "Is this something you'd decide, or is that the owner?" If it's not them, get the name first (see Objections, "Not me"). You can still ask the two questions afterward so the owner call isn't cold.</p>
+
+  <h2>Optional, if the call is going well</h2>
+  <ul class="tight">
+    <li>"What runs the business day to day? Email, Teams or Slack, a project tool, a CRM?" More connected tools means more value.</li>
+    <li>"Anything changing this year? A merger, someone retiring, a new system?" That's your why-now for Logan.</li>
+  </ul>
+  <div class="note"><b>Good to follow:</b> fill the form while they answer. You already have the name, company and email from your list.</div>
+</section>
+
+<!-- CLOSE -->
+<section class="page" id="p-close" data-title="The number and the ask" data-over="Closing" data-lead="Give them the estimate first. Then pivot: the exact number takes 20 minutes with Logan. If they won't book, offer to show them their estimate in the portal right now.">
+  <h2>Ballpark before you dial</h2>
+  <p>Use this to pick the range for the "I looked you up" opener. It's built on the rate card buyers publish: about $140K base, plus about $2,333 per full-time employee, plus about $11,667 per year of records. The form's estimate on the call always wins.</p>
+  <table>
+    <tr><th>Full-time office staff</th><th>3 to 5 years</th><th>5 to 10 years</th><th>10+ years</th></tr>
+    <tr><td><b>15 to 30</b></td><td>Low six figures<br><small>about $210K to $270K</small></td><td>Low six figures<br><small>about $230K to $330K</small></td><td>Low to mid six figures<br><small>about $290K to $410K</small></td></tr>
+    <tr><td><b>30 to 75</b></td><td>Low to mid six figures<br><small>about $250K to $370K</small></td><td>Mid six figures<br><small>about $270K to $430K</small></td><td>Mid six figures<br><small>about $330K to $490K</small></td></tr>
+    <tr><td><b>75 to 150</b></td><td>Mid six figures<br><small>about $350K to $550K</small></td><td>Mid to high six figures<br><small>about $370K to $610K</small></td><td>Mid to high six figures<br><small>about $430K to $670K</small></td></tr>
+    <tr><td><b>150+</b></td><td colspan="3">High six figures and up</td></tr>
+  </table>
+  <ul class="tight">
+    <li><b>Legal and finance firms</b> tend to come in higher. Lean to the top of the band.</li>
+    <li><b>Lots of connected tools</b> (Slack, Jira, CRM, ticketing, an old system they can still access) can add more on top.</li>
+    <li><b>Say the words, not the dollars.</b> "Low six figures" on the opener, the form's estimate once you have the two answers.</li>
+  </ul>
+
+  <h2>1. Give them the number</h2>
+  <div class="say"><span class="who">You</span><p>"Okay, I just ran it. A firm with about [X] people and [Y] years of records comes out around [range]. That's an estimate off two numbers."</p><p>If you opened with a ballpark: "So you're actually closer to [range] than what I said up front."</p><p>"How does that land?"</p><button class="copy">Copy</button></div>
+  <p>Then stop talking. Let them react.</p>
+
+  <h2>2. Pivot to the exact number</h2>
+  <div class="say"><span class="who">You</span><p>"To get you an exact number, someone has to look at which systems you use and how far back they go. That's a 20-minute call with Logan. He runs these and he'll walk you through the privacy side too. Does tomorrow at 10 or Thursday at 2 Eastern work better?"</p><button class="copy">Copy</button></div>
+  <p>Book it on <a href="https://calendly.com/logan-landbase/30-minute-call" target="_blank" rel="noopener">Logan's calendar</a> while they're still on the line. Always offer two set times.</p>
+
+  <h2>3. If they won't book: show them the estimate now</h2>
+  <div class="say"><span class="who">You</span><p>"No problem. Then at least see your number. I just sent it to your inbox. It comes from Capital at Mode Mobile, they run the paperwork for us, so it won't say Martal. Might be in spam. Can you pull it up? I'll hang on."</p><p>"Click the link... see [Company] and the estimate? That's yours."</p><button class="copy">Copy</button></div>
+  <p>If they click in, that counts as a meeting held. If they can't right now, set a time to call back.</p>
+
+  <h2>4. Lock it in</h2>
+  <div class="say"><span class="who">You</span><p>"So you're with Logan Thursday at 2 Eastern. What's your cell in case anything moves? And should anyone else be on, your CFO or whoever handles IT?"</p><button class="copy">Copy</button></div>
+  <p>Optional: "Lunch is on us that day. I'll send an Uber Eats link."</p>
+
+  <h2>We're testing which ask goes first</h2>
+  <div class="grid2">
+    <div class="card"><span class="tag">Route A &middot; odd dates</span><h4>Logan first, portal as backup</h4><p>The order on this page.</p></div>
+    <div class="card"><span class="tag blue">Route B &middot; even dates</span><h4>Portal first, Logan as backup</h4><p>Ask them to open the email first. If they can't or won't, book Logan.</p></div>
+  </div>
+  <div class="note"><b>Good to follow:</b> stick to the day's route even if you have a hunch, so the test is fair. If they're driving, go straight to Logan. Log the route on the first line of your opp notes.</div>
+</section>
+
+<!-- OBJECTIONS -->
+<section class="page" id="p-objections" data-title="Objections" data-over="Handling pushback" data-lead="Same four moves every time: acknowledge it, ask a question, answer in one breath, go back to the ask. Tap a card to see what to say.">
+  <div class="data"><b>From our calls:</b> when reps handled the first objection, 55% of calls became referrals. When they said "makes sense" and let it go, 7% did.</div>
+  <div class="flips" id="flips"></div>
+</section>
+
+<!-- FOLLOWUP -->
+<section class="page" id="p-followup" data-title="Callbacks, voicemail, email" data-over="Follow-up" data-lead="A form with no click and no booking is a meeting waiting to die. Call it back until they're on Logan's calendar or in the portal.">
+  <h2>The callback</h2>
+  <div class="say"><span class="who">You</span><p>"Hi [Name], it's [Rep] from Martal Data. We talked [day] about [Company]'s old records, the [range] estimate. Got 60 seconds? I want to make sure you actually get to see your number."</p><p>"Easiest way is 20 minutes with Logan. Tomorrow at 10 or 2?"</p><button class="copy">Copy</button></div>
+  <ul class="tight">
+    <li><b>Before you dial:</b> check the email you submitted against their company domain. One went in misspelled and never landed.</li>
+    <li><b>They can't find the email:</b> post in the channel to get it resent, and stay on the line if you can.</li>
+    <li><b>Cadence (good to follow):</b> within 24 hours, then day 2 and day 4.</li>
+  </ul>
+  <h2>Voicemail</h2>
+  <p>Under 20 seconds. No pitch. Give them a reason to be curious.</p>
+  <div class="say"><span class="who">You</span><p>"Hi [Name], [Rep] with Martal Data. Not urgent. I had a quick question about [Company]'s old records, the email and project history sitting in your systems. Might be worth something, might not. I can tell you in about a minute. [Number]."</p><button class="copy">Copy</button></div>
+  <h2>Email after "just send me something"</h2>
+  <p>Send it within the hour, while they still remember the call. Pick the version that matches what you got.</p>
+  <h3>You got the two numbers</h3>
+  <div class="say them"><span class="who">Subject: Following up on our call, [Name]</span><p>Hi [Name],</p><p>As promised, here's the quick version from our call.</p><p>AI companies are paying firms like [Company] to license a copy of their old email and project history. Names get stripped out and you decide what's included.</p><p>Based on the [#] people and [#] years you mentioned, you're looking at roughly [range]. Your full estimate is in an email from Capital at Mode Mobile. They handle our paperwork.</p><p>If you want the exact number, Logan can walk you through it in 20 minutes: [booking link]</p><p>[Rep]</p><button class="copy">Copy</button></div>
+  <h3>They didn't give you numbers</h3>
+  <div class="say them"><span class="who">Subject: Our call today, [Name]</span><p>Hi [Name],</p><p>As promised, here's what I was calling about.</p><p>AI companies are paying firms like [Company] to license a copy of their old email and project history. Names get stripped out and you decide what's included.</p><p>Reply with how many full-time people you have and how far back your systems go, and I'll send you an estimate.</p><p>[Rep]</p><button class="copy">Copy</button></div>
+  <h2>Email after a form with no click</h2>
+  <div class="say them"><span class="who">Subject: Your [Company] estimate from our call</span><p>Hi [Name],</p><p>As promised, your estimate from our call is waiting in an email from Capital at Mode Mobile. They handle our paperwork, so it won't say Martal. Worth a quick look in spam.</p><p>Or if it's easier, grab 20 minutes with Logan and he'll walk you through it: [booking link]</p><p>[Rep]</p><button class="copy">Copy</button></div>
+</section>
+
+<!-- LOGGING -->
+<section class="page" id="p-logging" data-title="Logging" data-over="Getting credit" data-lead="If it isn't logged right, it didn't happen. In week one the forms and the bookings didn't match and a whole Monday went to sorting it out.">
+  <table>
+    <tr><th>What happened</th><th>Log it as</th><th>Next</th></tr>
+    <tr><td>Booked on Logan's calendar</td><td><b>Meeting</b>, marked held once it happens</td><td>Post in the channel with day and time</td></tr>
+    <tr><td>They clicked into the portal on the call</td><td><b>Meeting + held</b></td><td>Post in the channel</td></tr>
+    <tr><td>Form submitted, no click, no booking</td><td><b>Interested</b></td><td>Callback task until they book or click in</td></tr>
+    <tr><td>Wants the number, won't do anything else</td><td>Submit the form anyway, <b>Interested</b></td><td>Give them the range, set a dated callback</td></tr>
+  </table>
+  <h2>Opp notes, every time</h2>
+  <div class="say them"><span class="who">Template</span><p>Route A or B &middot; First ask: yes or no &middot; Took: Logan, portal, both or neither</p><p>Email (spelled back): &middot; Full-time staff: &middot; Years of records: &middot; Systems mentioned:</p><p>Decision maker: &middot; Why now: &middot; Booking time or "portal entered":</p><button class="copy">Copy</button></div>
+</section>
+
+<!-- CHECK -->
+<section class="page" id="p-check" data-title="Final check" data-over="Prove it" data-lead="30 real call situations. You need 27 to pass. Answers shuffle every attempt. When you pass, you'll get a completion summary to send to Angela.">
+  <div id="ckStart" class="card" style="max-width:840px">
+    <h4>Before you start</h4>
+    <p>Enter your name so your completion summary is yours. Take your time. Every answer shows you why it's right or wrong, so treat misses as coaching.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+      <input id="ckName" class="gsearch" style="margin:0;max-width:320px" placeholder="Your full name">
+      <button class="btnx" id="ckGo">Start the check</button>
+    </div>
+    <p id="ckErr" style="color:var(--danger);margin-top:8px;display:none">Add your name to start.</p>
+  </div>
+  <div id="ckRun" style="display:none;max-width:840px">
+    <div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:16px;position:sticky;top:12px;z-index:5">
+      <div><h4 style="margin:0" id="ckWho"></h4><p id="ckMsg">30 to go.</p></div>
+      <div style="margin-left:auto;text-align:right"><div style="font-size:28px;font-weight:800;color:var(--charcoal)" id="ckN">0 / 30</div><small style="color:var(--ink-400)">27 to pass</small></div>
+    </div>
+    <div id="ck"></div>
+  </div>
+  <div id="ckDone" style="display:none;max-width:840px"></div>
+</section>
+
+<div class="body" id="body"></div>
+</main>
+</div>
+
+<script>
+const GLOSS=[
+ ["Martal Data","Martal's data licensing business. Helps companies get paid for licensing a copy of their old records to AI developers.","\"I'm with Martal Data.\"",""],
+ ["Mode","Our platform partner. Runs the portal and the paperwork. Their email shows up as \"Capital at Mode Mobile.\"","\"Mode runs the paperwork for us.\"","Don't call them the buyer."],
+ ["AI developers","The companies building AI tools that pay for this data. Sometimes called AI labs internally.","\"AI companies\" or \"AI developers\"","Never name a specific lab."],
+ ["Data license","Permission to use a copy of the data for a set purpose and time. The company keeps the original and still owns it.","\"License a copy\"","Never \"sell\" or \"buy.\""],
+ ["Training-only license","The copy can only be used to train AI models. Nothing else.","\"It's only used to train AI.\"",""],
+ ["Operating records","A company's day-to-day work history: email, team chat, project tools, tickets, docs, CRM. Also called operational data.","\"Old email and project history\"",""],
+ ["Workflow","How a piece of work moves from start to finish across people and tools. This is what AI developers want to learn.","\"How work moves through the business\"",""],
+ ["Anonymized / de-identified","Names, emails, phone numbers and other identifiers are swapped for consistent fake ones, so nobody can tell who's who.","\"Names get stripped out\"","Never \"100% anonymous\" or \"100% safe.\""],
+ ["Redacted","Sensitive content removed entirely, not just renamed. Used for privileged or private material.","\"Sensitive material gets removed\"",""],
+ ["PII","Personally identifiable information: anything that identifies a real person, like a name, email or phone number.","","Don't use the acronym with prospects."],
+ ["Identity map","How Martal Data keeps fake names consistent across every tool, so \"Client A\" in email is also \"Client A\" in the CRM.","",""],
+ ["Exclusions","Specific things the company keeps out of the deal, written into the contract. Like client files or one partner's inbox.","\"You pick what's in.\"","Excluding whole systems lowers the number."],
+ ["Sample review","The company can look at an anonymized sample before anything is delivered.","\"You can see a sample first.\"",""],
+ ["Full-time staff","People who work at computers and create email, chat and project records. Field, driver and warehouse staff don't count. The form calls this desk staff.","\"Full-time people on the team, not counting field staff\"",""],
+ ["Years of records","How far back the company's email and systems go, including old systems they can still access.","\"How long have you been on your current systems?\"",""],
+ ["Legacy system","An old system the company moved off of but can still get into. Often the easiest data to license.","\"Can you still get into the old one?\"",""],
+ ["Connected systems","How many tools the company's work runs through. More connected tools usually means a higher number.","",""],
+ ["Estimate / range","The number the form gives you on the call, based on staff and years. Not an offer.","\"That's an estimate.\"","Never present it as a guaranteed amount."],
+ ["The form","The referral form at our Mode link. You fill it in on the call. It produces the estimate and sends the prospect the Mode email.","",""],
+ ["Mode email","The email the prospect gets after you submit the form. From \"Capital at Mode Mobile.\" Has their estimate and a private link.","\"It won't say Martal, check spam.\"",""],
+ ["Portal","Where the prospect lands after clicking the Mode email link. They claim their company account and see their estimate.","\"Pull up your estimate\"",""],
+ ["Verification","The prospect clicking the Mode email link and getting into the portal. Until they do, nothing moves.","",""],
+ ["Referral (status)","Where a prospect sits on the backend after the form is submitted but before they verify. Stuck until someone calls them back.","",""],
+ ["LOI","Letter of intent. Non-binding, comes with a mutual NDA, and holds the company's spot for 14 days while the offer is prepared.","\"It just holds your spot.\"","Not a commitment."],
+ ["NDA","Non-disclosure agreement. Both sides agree to keep things confidential.","",""],
+ ["Intake","Short form after the LOI: systems, rough volumes, years, headcount. Rough numbers are fine.","",""],
+ ["Data license agreement","The contract with the fixed offer. The only point where the company commits. Their lawyer reviews it.","\"You see a fixed number in writing first.\"",""],
+ ["Export","The company's own team pulls copies of their data. Nobody gets logins or connects to live systems.","\"Your team exports copies.\"","Never \"we'll connect to your systems.\""],
+ ["Rate card","What buyers across the market publish they'll pay, by headcount and years. Martal Data values against the whole market.","",""],
+ ["Exclusive vs non-exclusive","Whether the data can be licensed to one buyer or several. Logan's topic.","","Don't raise it on a cold call."],
+ ["Meeting","Booked on Logan's calendar, or clicked into the portal on the call.","",""],
+ ["Held","The Logan call happened, or they got into the portal.","",""],
+ ["Interested","Form submitted but no booking and no click. Needs a callback.","",""],
+ ["Route A / Route B","Our close test. Route A (odd dates): Logan first. Route B (even dates): portal first.","",""],
+ ["Decision maker","The person who can approve licensing the company's records. C-suite or the managing partner.","\"Is this your call, or the owner's?\"",""],
+ ["SAM registration","A federal registration most government buyers require. We don't have it, so we skip government.","",""],
+ ["HIPAA","US rules for patient health information. Why we skip hospitals and patient-data businesses for now.","","Leave HIPAA questions to Logan."],
+ ["ITAR","US export controls on defense-related data. Why we skip defense contractors.","",""]
+];
+
+const QZ=[
+// THE OFFER
+{s:"The offer",p:"A CEO asks, \"So what exactly would you be taking?\" Best answer?",o:["\"A copy of your old internal email, chat and project history, so AI can learn how work moves through a business. Client files can stay out.\"","\"Your client list and financials, anonymized so nobody can tell who they are.\"","\"Everything in your systems, but we delete it once the AI is trained.\"","\"Just a CRM export. That's what buyers want.\""],a:0,e:"They want how work moves across tools, not client files. A CRM export alone is just a spreadsheet."},
+{s:"The offer",p:"Firm A: 10 years of records across email, Teams, Karbon and QuickBooks. Firm B: 3 years, email only. Same headcount. Why does Firm A usually get more?",o:["More years and more connected tools show more of how work actually moves","Firm A has more clients","Buyers pay per gigabyte","It doesn't. Headcount is the only thing that matters"],a:0,e:"Staff, years, connected systems and industry all drive the number."},
+{s:"The offer",p:"Prospect: \"If I take this call with Logan, am I locked into anything?\"",o:["\"Nothing's binding until you sign a fixed offer in writing, and your lawyer reviews it first.\"","\"The LOI locks you in for 14 days, but after that you're free.\"","\"Only for the two-year license term.\"","\"Once you click into the portal, it's started, but you can back out.\""],a:0,e:"The LOI is non-binding. The data license agreement with the fixed offer is the only commitment."},
+{s:"The offer",p:"Prospect: \"We'd need the money by end of year. Doable?\"",o:["\"Most companies are paid about two to three months from the first call. I can't promise a date, but Logan can walk you through timing.\"","\"Easily. Payment usually lands in two weeks.\"","\"Yes, as soon as you sign the LOI.\"","\"That depends on the AI lab, I'd guess yes.\""],a:0,e:"Never promise a date. About 2 to 3 months is what we say."},
+{s:"The offer",p:"Prospect: \"My team doesn't have time for some big data project.\"",o:["\"It's a few hours of someone's time. Your team exports copies, nothing connects to your live systems, and how you run doesn't change.\"","\"We just need admin logins and we'll handle the rest.\"","\"It's about a month of work for your IT person, but it pays well.\"","\"Then it's probably not a fit.\""],a:0,e:"No logins change hands. Their team exports copies."},
+// VOCAB
+{s:"Vocabulary",p:"Prospect: \"What's this LOI you mentioned?\"",o:["A non-binding letter of intent with an NDA. It holds your spot for 14 days while the offer gets prepared. No price, no commitment.","The final contract with your payout.","A form you sign to give us access to your systems.","A letter you send to your clients telling them about the deal."],a:0,e:"Non-binding, holds their spot."},
+{s:"Vocabulary",p:"In the channel you see a prospect listed as \"Referral.\" What does that mean?",o:["The form was submitted, but they haven't verified the Mode email yet, so nothing is moving","They referred us to another company","They signed the LOI","Logan already met with them"],a:0,e:"Stuck until someone calls them back and gets them to Logan or into the portal."},
+{s:"Vocabulary",p:"Prospect: \"Do you anonymize or redact?\" What's actually true?",o:["Both. Identifiers like names and emails get swapped for consistent fake ones, and sensitive or privileged material gets removed entirely.","Same thing, different word.","Redaction means it's encrypted.","We only redact. Names stay so the AI understands context."],a:0,e:"Anonymized swaps identifiers. Redacted removes the content."},
+{s:"Vocabulary",p:"\"We moved from QuickBooks Desktop to Xero in 2022, but we still have the old files.\" What is the QuickBooks data?",o:["A legacy system. Count its years. It's often the easiest data to license.","Useless, it's outdated","Personal data that has to be excluded","A reason to disqualify them"],a:0,e:"Old systems they can still access still count."},
+{s:"Vocabulary",p:"Prospect: \"I'd want to keep my partner's inbox out of it.\"",o:["\"That can be written into the contract as an exclusion. Logan will walk through what that does to the number.\"","\"No problem, take out anything you want, it won't change a thing.\"","\"Everything has to be included or it won't work.\"","\"We'll just anonymize it, so it doesn't matter.\""],a:0,e:"Exclusions are fine. Leaving out whole systems lowers the offer, so don't promise it won't change."},
+// CALLING
+{s:"Who we're calling",p:"A trucking company has 120 employees, 90 of them drivers. What goes in the form for staff?",o:["30, the office staff","120","90","Skip them, trucking isn't on our list"],a:0,e:"Only people working at computers create the records that count."},
+{s:"Who we're calling",p:"Your list shows a CFO who started 6 weeks ago. Best angle for the opener?",o:["New execs want early wins, and this is new revenue that doesn't take budget or headcount","Ask what their predecessor thought about it","Skip them until they've been in the role a year","Lead with how many companies we've worked with"],a:0,e:"New to the job is a signal. Use it as your reason for calling."},
+{s:"Who we're calling",p:"You land on the COO of a hospital network. What do you do?",o:["Don't pitch. We skip patient-data businesses until there's a HIPAA path. Post it in the channel.","Pitch it, healthcare data is valuable","Book them with Logan and let him decide","Offer to exclude patient data"],a:0,e:"Hospitals and patient-data businesses are a skip for now."},
+// PITCHES
+{s:"Pitches",p:"Which opener breaks the most rules?",o:["\"Hi, how are you today? I'm with Martal Data, we buy company data for AI.\"","\"Hi Dana, it's Sam with Martal Data. I'll be upfront, this is a cold call. Can I tell you why I picked you?\"","\"So I was poking around Whitfield before I called. Looks like you've got about 20 people. That sound right?\"","\"Quick question, then you can tell me to get lost.\""],a:0,e:"\"How are you today\" plus \"we buy data\" in one breath. Two of the fastest ways to lose a CEO."},
+{s:"Pitches",p:"Your list says the firm moved to Karbon last year. Best question to lead with?",o:["\"Can you still get into the old system?\"","\"How do you like Karbon so far?\"","\"Are you happy with your current tech stack?\"","\"Would Karbon be open to sharing data?\""],a:0,e:"Old systems are the easiest yes."},
+{s:"Pitches",p:"You're using \"I looked you up\" on a 25-person firm, 10 years old. What do you say about money?",o:["\"Firms your size are usually seeing somewhere in the low to mid six figures.\"","\"You'll get about $315K.\"","\"You could be looking at millions.\"","Nothing. Never mention money on the opener."],a:0,e:"Always a range in words. List data can be off."},
+{s:"Pitches",p:"CEO: \"Honestly, I've had like ten of these calls this month.\"",o:["\"Not surprised. Did any of them give you an actual number? I can, in about a minute.\"","\"We're different from those guys, let me explain how.\"","\"Sorry to bother you, I'll let you go.\"","\"Then you already know how it works, so can I get 30 minutes?\""],a:0,e:"Own it, then give first."},
+// DISCOVERY
+{s:"The two questions",p:"You're talking to the managing partner of a CPA firm. Best way to ask question one?",o:["\"How many full-time people at the firm?\"","\"How many desk staff do you have?\"","\"What's your headcount including seasonal staff?\"","\"How many clients do you serve?\""],a:0,e:"At a professional firm, everyone works at a computer. Keep it simple."},
+{s:"The two questions",p:"\"We've been around since 1998, but we moved everything to Microsoft 365 in 2020 and the old server is gone.\" How many years go in the form?",o:["About 6, since 2020","28, since 1998","Ask Logan, don't submit","0, they're disqualified"],a:0,e:"Only records they can still access count. Founding year isn't system history."},
+{s:"The two questions",p:"Halfway through, the person says, \"I'm the VP of Ops, the owner would decide this.\" Best move?",o:["Get the owner's name, then still ask the two questions so the owner call isn't cold","Hang up and call the owner","Keep pitching the VP, they'll pass it along","Book the VP with Logan"],a:0,e:"Name first. The two numbers make your next call warm."},
+// CLOSE
+{s:"The number and the ask",p:"You just got both numbers. What's your very next move?",o:["Give them the estimate and stop talking","Ask for 20 minutes with Logan","Explain the LOI and intake","Send the email"],a:0,e:"Number first. Let it land."},
+{s:"The number and the ask",p:"Which pivot to Logan is best?",o:["\"To get you an exact number, someone has to look at which systems you use. That's 20 minutes with Logan. Tomorrow at 10 or Thursday at 2?\"","\"Would you be open to learning more sometime next week?\"","\"Can I send you some information and follow up?\"","\"Logan is our expert, what's a good time for you?\""],a:0,e:"The meeting is how they get the exact number. Two set times."},
+{s:"The number and the ask",p:"It's November 25. Which route are you on?",o:["Route A: Logan first, portal as backup","Route B: portal first, Logan as backup","Whichever feels right on the call","Portal only"],a:0,e:"Odd dates are Route A."},
+{s:"The number and the ask",p:"Route B day. You ask them to open the Mode email and they say, \"I'm driving.\"",o:["Go straight to booking Logan","Ask them to pull over","Submit the form and call back tomorrow","Mark them interested and move on"],a:0,e:"Driving is the one exception. Book Logan."},
+// OBJECTIONS
+{s:"Objections",p:"\"We'd never sell our data.\"",o:["\"Good, you shouldn't. This isn't selling and it isn't client data. It's a license on an anonymized copy of old records, and you pick what's in.\"","\"It's 100% safe, there are no privacy concerns.\"","\"Everybody's doing it now.\"","\"Makes sense. Thanks for your time.\""],a:0,e:"Agree, reframe, back to the ask. \"Makes sense\" and goodbye is how 93% of these died."},
+{s:"Objections",p:"\"Is this a scam?\"",o:["\"Fair, I'd ask the same. You see a number before you commit to anything, and nothing's binding until there's a fixed offer your lawyer has read.\"","\"No, we're totally legit, we've worked with tons of companies.\"","\"Google us.\"","\"We're backed by a major AI lab.\""],a:0,e:"Never claim customers or name a lab. Explain what protects them."},
+{s:"Objections",p:"\"I don't want my data ending up with a competitor.\"",o:["One answer: it's training-only and anonymized. Then book Logan, because deal terms are his","Explain the full license and exclusivity terms yourself","Promise it will never go to anyone in their industry","Tell them competitors are already doing it"],a:0,e:"Don't answer deal terms. That's Logan's call."},
+{s:"Objections",p:"\"Who's actually buying this?\"",o:["\"AI developers building tools that run business workflows. We don't name them on a cold call, and you'd never deal with them directly.\"","Name the biggest AI lab you think it is","\"Mode buys it.\"","\"Honestly, I don't know.\""],a:0,e:"Never name a lab. Never call Mode the buyer."},
+// FOLLOW-UP + LOGGING
+{s:"Follow-up and logging",p:"You submitted the form. They said they'd check the email later. No booking. How do you log it and what's next?",o:["Interested. Call back within 24 hours, then day 2 and day 4, until they book or click in","Meeting, it's in the system","Meeting held, they have the email","Nothing until they click"],a:0,e:"A form with no verified email is neither win."},
+{s:"Follow-up and logging",p:"Before calling back a stuck referral, what do you check first?",o:["That the email you submitted matches their company domain and is spelled right","Their LinkedIn activity","Their revenue","Whether Logan has called them"],a:0,e:"One went in misspelled and never landed."}
+];
+
+const OBJ=[
+ {t:"Not me. Talk to IT.",n:"Most common on the campaign",s:"\"Totally fair. Who'd make that call, the owner or the managing partner? What's their name? Mind if I say you pointed me their way?\"",n2:"If they say IT: \"IT would handle the export if it ever got that far. Who decides if the company does it at all?\""},
+ {t:"We don't sell our data.",n:"Top objection",s:"\"Good, you shouldn't. This isn't selling and it isn't client data. It's a license on an anonymized copy of old records. Names get swapped out and you pick what's in. Who sets the policy on that?\"",n2:"Then: \"Want me to see if it's even worth a conversation? Two quick questions.\""},
+ {t:"Is this legit? What is this?",n:"Comes up when the offer isn't clear",s:"\"Fair, I'd ask the same. AI developers want to see how real work gets done, so they license old records companies aren't using. You see a number before you commit to anything, and nothing's binding until there's a fixed offer your lawyer has read.\"",n2:"Then straight to the two questions."},
+ {t:"Just send me an email.",n:"The brush-off",s:"\"Happy to. So it's not a generic email, two quick ones: how many full-time people on the team, and how far back do your systems go? I'll send you the actual estimate for [Company].\"",n2:"Then submit the form. The Mode email is the info they asked for."},
+ {t:"I don't have time.",n:"Always offer a set time",s:"\"Understood. Is 3:30 today or 9 tomorrow better?\"",n2:"Or: \"Ten seconds then. How many people on the team and how far back do your systems go? I'll email you the number.\""},
+ {t:"What kind of data, exactly?",n:"Lead with the least scary stuff",s:"\"Mostly internal. Old team chat, email, your project or task tool. Threads nobody's opened in years. They're learning how a request came in and how your team handled it. Client files can stay out completely.\"",n2:"Then back to the two questions."},
+ {t:"I don't want this ending up with a competitor.",n:"Our first signed CEO asked this. He still signed.",s:"\"Totally fair. It's licensed to AI developers for training only, and it's anonymized, so nobody gets your playbook with your name on it. That's exactly what Logan walks through. Tomorrow at 10 or 2?\"",n2:"This one goes to Logan. Don't answer deal terms yourself."},
+ {t:"Who's buying it?",n:"Never name a lab",s:"\"AI developers building tools that run real business workflows. We don't name them on a cold call, and you'd never deal with them directly. Logan covers exactly who and how.\"",n2:"Then book Logan."},
+ {t:"How much exactly?",n:"Give the estimate, book the meeting",s:"\"I can give you an estimate right now off two numbers. The exact figure gets set after a short look at your systems, in writing. That's what 20 minutes with Logan is for.\"",n2:"Never present the estimate as an offer."},
+ {t:"We're in the middle of a merger.",n:"Can go either way",s:"\"Totally get it. Honestly, that's when most companies look at this, because the old archive usually gets shelved after a deal. Worth knowing the number before that happens?\"",n2:"If they're frozen: submit the form with the numbers, mark interested, set a dated callback."},
+ {t:"I need to take it to my partners.",n:"Give them something to bring",s:"\"Makes sense. Want to bring them a real number instead of a cold call? Two quick questions and I'll send you the estimate. Or I can put your partners on with Logan.\"",n2:"Offer the Logan call with the partners on it."},
+ {t:"We're regulated. Compliance won't allow it.",n:"Don't give legal answers",s:"\"Makes sense, and that's why the agreement comes before any data moves. Sensitive material gets removed and your counsel reviews every term. Who owns that call on your side?\"",n2:"Legal and HIPAA questions go to Logan."},
+ {t:"Someone else already called me about this.",n:"Own it",s:"\"Not surprised, it's getting popular. Did any of them give you an actual number? I can, in about a minute.\"",n2:"Then the two questions."},
+ {t:"How long until we get paid?",n:"Never promise a date",s:"\"Most companies get paid about two to three months from the first call. Nothing's locked in until you sign a fixed offer.\"",n2:"Then back to the ask."}
+];
+
+const order=['offer','vocab','calling','pitches','discovery','close','objections','followup','logging','check'];
+const body=document.getElementById('body');
+const pages={};
+order.forEach(id=>{pages[id]=document.getElementById('p-'+id);body.appendChild(pages[id])});
+
+// head
+const head=document.createElement('div');head.className='head';
+head.innerHTML='<div class="overline"></div><h1></h1><p></p>';
+body.parentNode.insertBefore(head,body);
+
+function show(id){
+  if(!pages[id])id='offer';
+  order.forEach(k=>pages[k].classList.toggle('on',k===id));
+  const p=pages[id];
+  head.querySelector('.overline').textContent=p.dataset.over;
+  head.querySelector('h1').textContent=p.dataset.title;
+  head.querySelector('p').textContent=p.dataset.lead;
+  document.querySelectorAll('aside a').forEach(a=>a.classList.toggle('on',a.dataset.p===id));
+  let pg=p.querySelector('.pager');if(pg)pg.remove();
+  const i=order.indexOf(id);pg=document.createElement('div');pg.className='pager';
+  if(i>0){const t=pages[order[i-1]].dataset.title;pg.innerHTML+='<a href="#'+order[i-1]+'"><small>Back</small><span>'+t+'</span></a>'}
+  if(i<order.length-1){const t=pages[order[i+1]].dataset.title;pg.innerHTML+='<a class="next" href="#'+order[i+1]+'"><small>Next</small><span>'+t+'</span></a>'}
+  p.appendChild(pg);
+  window.scrollTo(0,0);
+  document.getElementById('side').classList.remove('open');
+}
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1)||'offer');
+document.getElementById('menu').onclick=()=>document.getElementById('side').classList.toggle('open');
+
+// glossary
+const gl=document.getElementById('gl');
+function renderGloss(f){
+  gl.innerHTML='';
+  GLOSS.filter(g=>!f||(g[0]+' '+g[1]).toLowerCase().includes(f)).forEach(g=>{
+    const c=document.createElement('div');c.className='card';
+    c.innerHTML='<h4>'+g[0]+'</h4><p>'+g[1]+'</p>'+(g[2]?'<div class="say-it"><b>Say:</b> '+g[2]+'</div>':'')+(g[3]?'<div class="dont"><b>Watch:</b> '+g[3]+'</div>':'');
+    gl.appendChild(c)});
+  if(!gl.children.length)gl.innerHTML='<p>No match. Ask in #int-martal-data-labeler.</p>';
+}
+renderGloss('');
+document.getElementById('gsearch').oninput=e=>renderGloss(e.target.value.trim().toLowerCase());
+
+// pitch tabs
+document.querySelectorAll('#ptabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#ptabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.ppane').forEach(p=>p.classList.toggle('on',p.id==='pt-'+b.dataset.t));
+});
+
+// objections
+const flips=document.getElementById('flips');
+OBJ.forEach(o=>{const f=document.createElement('div');f.className='flip';f.tabIndex=0;
+  f.innerHTML='<div class="in"><div class="f"><span class="tag ink" style="align-self:flex-start">They say</span><q>"'+o.t+'"</q><small>'+o.n+' &middot; tap to flip</small></div><div class="b"><span class="lbl">You say</span><p>'+o.s+'</p><span class="lbl">Then</span><p>'+o.n2+'</p></div></div>';
+  const t=()=>f.classList.toggle('on');f.onclick=t;f.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}};flips.appendChild(f)});
+
+// final check
+const PASS=27, ANGELA='angela.h@martalgroup.com';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function code(str){let h=5381;for(const c of str)h=((h<<5)+h+c.charCodeAt(0))>>>0;return 'MD-'+h.toString(36).toUpperCase().slice(0,6)}
+let rep='',right=0,done=0,miss={};
+const SECTS=[...new Set(QZ.map(q=>q.s))];
+const SECTPAGE={"The offer":"offer","Vocabulary":"vocab","Who we're calling":"calling","Pitches":"pitches","The two questions":"discovery","The number and the ask":"close","Objections":"objections","Follow-up and logging":"followup"};
+try{document.getElementById('ckName').value=localStorage.getItem('mdt_name')||''}catch(e){}
+document.getElementById('ckGo').onclick=()=>{
+  rep=document.getElementById('ckName').value.trim();
+  if(!rep){document.getElementById('ckErr').style.display='block';return}
+  try{localStorage.setItem('mdt_name',rep)}catch(e){}
+  startCheck();
+};
+function startCheck(){
+  right=0;done=0;miss={};SECTS.forEach(x=>miss[x]=0);
+  document.getElementById('ckStart').style.display='none';document.getElementById('ckDone').style.display='none';
+  document.getElementById('ckRun').style.display='block';
+  document.getElementById('ckWho').textContent=rep;
+  document.getElementById('ckN').textContent='0 / '+QZ.length;
+  document.getElementById('ckMsg').textContent=QZ.length+' to go.';
+  const ck=document.getElementById('ck');ck.innerHTML='';
+  QZ.forEach((q,n)=>{
+    const w=document.createElement('div');w.className='q';w.style.cssText='background:#fff;padding:16px 20px;border-radius:16px;border:1px solid var(--ink-100);margin-bottom:12px';
+    w.innerHTML='<div class="qsec">'+q.s+'</div><div class="p">'+(n+1)+'. '+q.p+'</div>';
+    shuffle(q.o.map((t,i)=>({t,i}))).forEach(o=>{
+      const b=document.createElement('button');b.className='opt';b.textContent=o.t;b.dataset.i=o.i;
+      b.onclick=()=>{
+        w.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+        if(o.i===q.a){b.classList.add('right');right++}else{b.classList.add('wrong');w.querySelector('.opt[data-i="'+q.a+'"]').classList.add('right');miss[q.s]++}
+        w.classList.add('answered');done++;
+        document.getElementById('ckN').textContent=right+' / '+QZ.length;
+        document.getElementById('ckMsg').textContent=done<QZ.length?(QZ.length-done)+' to go.':'Done.';
+        if(done===QZ.length)setTimeout(finish,600);
+      };w.appendChild(b)});
+    const ex=document.createElement('div');ex.className='ex';ex.textContent=q.e;w.appendChild(ex);
+    ck.appendChild(w)});
+  window.scrollTo(0,0);
+}
+function finish(){
+  let attempts=1;try{attempts=(+localStorage.getItem('mdt_attempts')||0)+1;localStorage.setItem('mdt_attempts',attempts)}catch(e){}
+  const passed=right>=PASS, pct=Math.round(right/QZ.length*100);
+  const now=new Date(), when=now.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
+  const totals={};QZ.forEach(q=>totals[q.s]=(totals[q.s]||0)+1);
+  const weak=SECTS.filter(x=>miss[x]>0).sort((a,b)=>miss[b]/totals[b]-miss[a]/totals[a]);
+  const bars=SECTS.map(x=>{const r=totals[x]-miss[x],pc=Math.round(r/totals[x]*100);return '<div class="secbar"><span>'+x+'</span><div class="t"><i class="'+(pc<80?'low':'')+'" style="width:'+pc+'%"></i></div><b>'+r+'/'+totals[x]+'</b></div>'}).join('');
+  const d=document.getElementById('ckDone');d.style.display='block';document.getElementById('ckRun').style.display='none';
+  if(passed){
+    const c=code(rep+'|'+right+'|'+now.toDateString());
+    const msg='Martal Data SDR Training: PASSED\nRep: '+rep+'\nScore: '+right+'/'+QZ.length+' ('+pct+'%)\nAttempt: '+attempts+'\nCompleted: '+when+'\nWeakest area: '+(weak[0]||'None, perfect score')+'\nCode: '+c;
+    const mail='mailto:'+ANGELA+'?subject='+encodeURIComponent('Martal Data training passed: '+rep)+'&body='+encodeURIComponent(msg);
+    d.innerHTML='<div class="result"><div class="overline" style="color:#b6d67e">Passed</div><div class="big">'+right+' / '+QZ.length+'</div><h3>Nice work, '+rep.split(' ')[0]+'. You\'re cleared to dial.</h3><p>Send this summary to Angela to log your completion.</p></div>'+
+    '<div class="card"><h4>Your completion summary</h4><textarea class="summary" id="sumTxt" readonly>'+msg+'</textarea>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btnx" id="sumCopy">Copy summary</button><a class="btnx dark" style="text-decoration:none" href="'+mail+'">Email it to Angela</a></div>'+
+    '<p style="margin-top:10px;font-size:13px;color:var(--ink-400)">Or paste it in a Slack DM to Angela. Email: '+ANGELA+'</p></div>'+
+    '<h3>By section</h3>'+bars+'<p style="margin-top:16px"><button class="btnx line" id="again">Take it again</button></p>';
+    document.getElementById('sumCopy').onclick=e=>{const t=document.getElementById('sumTxt');t.select();try{navigator.clipboard.writeText(t.value).then(()=>{e.target.textContent='Copied'})}catch(err){}};
+  }else{
+    const links=weak.map(x=>'<a href="#'+SECTPAGE[x]+'">'+x+'</a> ('+miss[x]+' missed)').join(' &middot; ');
+    d.innerHTML='<div class="result" style="background:var(--charcoal)"><div class="overline" style="color:#e8a59d">Not yet</div><div class="big">'+right+' / '+QZ.length+'</div><h3>You need '+PASS+' to pass.</h3><p>Go back over the sections below, then take it again. The answers shuffle every time.</p></div>'+
+    '<div class="card"><h4>Review these first</h4><p>'+links+'</p></div><h3>By section</h3>'+bars+'<p style="margin-top:16px"><button class="btnx" id="again">Take it again</button></p>';
+  }
+  document.getElementById('again').onclick=startCheck;
+  window.scrollTo(0,0);
+}
+
+// copy
+document.addEventListener('click',e=>{const b=e.target.closest('.say .copy');if(!b)return;
+  const txt=[...b.parentElement.querySelectorAll('p')].map(p=>p.textContent).join('\n');
+  try{navigator.clipboard.writeText(txt).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1400)})}catch(err){}
+});
+</script>
+</body>
+</html>
